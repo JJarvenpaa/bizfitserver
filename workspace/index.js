@@ -3,7 +3,7 @@ var qs = require('querystring');
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 
-var url = 'mongodb:// 127.0.0.1:27017/test';
+var url = 'mongodb://127.0.0.1:27017/test';
 
 const PORT = 8080;
 
