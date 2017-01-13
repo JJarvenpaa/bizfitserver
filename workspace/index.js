@@ -10,6 +10,9 @@ const PORT = 8080;
 
 var job="job";
 
+
+
+
 //We need a function which handles requests and sends responses
 function handleRequest(request, response) {
     //console.log("New request!");
@@ -354,4 +357,4 @@ function handleRequest(request, response) {
 var server = http.createServer(handleRequest);
 
 //Lets start our server
-server.listen(PORT);
+server.listen(PORT,"0.0.0.0");
