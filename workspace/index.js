@@ -65,7 +65,7 @@ function handleRequest(request, response) {
                     });
                     response.writeHeader(200, {
                         "Content-Type": "text/plain",
-                        'Content-Length': 0
+                        //'Content-Length': 0
                     });
                     response.write("done");
                     response.end();
@@ -102,7 +102,7 @@ function handleRequest(request, response) {
                             //console.log(object);
                             response.writeHeader(200, {
                                 "Content-Type": "text/plain",
-                                'Content-Length': object.length
+                                //'Content-Length': object.length
                             });
                             response.write(object);
                             response.end();
@@ -131,7 +131,7 @@ function handleRequest(request, response) {
                     });
                     response.writeHeader(200, {
                         "Content-Type": "text/plain",
-                        'Content-Length': 0
+                        //'Content-Length': 0
                     });
                     response.write("done");
                     response.end();
@@ -338,7 +338,7 @@ function handleRequest(request, response) {
                             response.writeHeader(200, 
                             {
                                 "Content-Type": "text/plain",
-                                'Content-Length': object.length
+                                //'Content-Length': object.length
                             });
                             response.write(object);
                             response.end();
