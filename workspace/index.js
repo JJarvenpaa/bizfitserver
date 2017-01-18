@@ -9,6 +9,7 @@ const PORT = 8080;
 
 
 var job="job";
+var userName="userName";
 
 
 
@@ -287,7 +288,7 @@ function handleRequest(request, response) {
                 console.log("Möh");
                 MongoClient.connect(url,function(err,db){
                     
-                    var finder={'_id':post['User']};
+                    var finder={'_id':post[userName]};
                     var newTracker = post['Tracker'];
                     var cursor=db.collection('user').find(finder);
                     cursor.each(function(err, user) 
