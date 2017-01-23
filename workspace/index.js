@@ -19,7 +19,6 @@ var getSharedTrackers="getSharedTrackers";
 function handleRequest(request, response) {
     var test;
 
-    console.log("upattu");
     
 
     // TODO Better parameters for filtering out junk
