@@ -17,10 +17,9 @@ var getSharedTrackers="getSharedTrackers";
 
 //We need a function which handles requests and sends responses
 function handleRequest(request, response) {
-    //console.log("New request!");
     var test;
 
-
+    console.log("upattu");
     
 
     // TODO Better parameters for filtering out junk
@@ -40,7 +39,6 @@ function handleRequest(request, response) {
 
         request.on('end', function() {
             var post = JSON.parse(body);
-            //console.log(post);
             if (post[job]=="save") {
 
                 // while(body.charAt(body.length-1) == '$')
@@ -53,16 +51,11 @@ function handleRequest(request, response) {
                 
                 MongoClient.connect(url, function(err, db) {
                     assert.equal(null, err);
-                    //console.log("Connected correctly to server.");
-                    //console.log(body);
-                    //console.log(post._id);
 
 
                     db.collection('user').save(post["user"], {
                         w: 1
                     }, function(err, result) {
-                       // console.log(result);
-                        //console.log(err);
                         db.close();
                     });
                     response.writeHeader(200, {
@@ -78,8 +71,6 @@ function handleRequest(request, response) {
             else if (post[job]=="load") {
                 MongoClient.connect(url, function(err, db) {
                     assert.equal(null, err);
-                    //console.log("Connected correctly to server.");
-                    //console.log(body);
                     var end = false;
 
                     var object;
@@ -101,7 +92,6 @@ function handleRequest(request, response) {
                             object="";
                         }
                         if (!end) {
-                            //console.log(object);
                             response.writeHeader(200, {
                                 "Content-Type": "text/plain",
                                 //'Content-Length': object.length
@@ -119,16 +109,11 @@ function handleRequest(request, response) {
             }else if(post[job]=="send_message"){
                     MongoClient.connect(url, function(err, db) {
                     assert.equal(null, err);
-                   // console.log("Connected correctly to server.");
-                    //console.log(body);
-                    console.log(post.message);
 
 
                     db.collection('message').save(post["message"], {
                         w: 1
                     }, function(err, result) {
-                        //console.log(result);
-                        //console.log(err);
                         db.close();
                     });
                     response.writeHeader(200, {
@@ -143,8 +128,6 @@ function handleRequest(request, response) {
             }else if(post[job]=="get_message_incoming"){
                 MongoClient.connect(url, function(err, db) {
                     assert.equal(null, err);
-                    //console.log("Connected correctly to server.");
-                    console.log(body);
                     var object;
                     var array=[];
                     //TODO haku toistenpäin
@@ -154,10 +137,7 @@ function handleRequest(request, response) {
                     var cursor = db.collection('message').find(finder);
                     cursor.each(function(err, doc) {
                         assert.equal(err, null);
-                        //console.log(doc);
                         if (doc != null) {
-                            //console.log("toimii");
-                            //console.log(doc);
                             //var jotain={'user':doc};
                             if(post["creationTime"]<doc["creationTime"] && post["other"] == doc["sender"]){
                                 array.push(JSON.stringify(doc));
@@ -188,8 +168,6 @@ function handleRequest(request, response) {
             else if(post[job]=="get_message_outgoing"){
                 MongoClient.connect(url, function(err, db) {
                     assert.equal(null, err);
-                    //console.log("Connected correctly to server.");
-                    console.log(body);
                     var object;
                     var array=[];
                     //TODO haku toistenpäin
@@ -199,10 +177,7 @@ function handleRequest(request, response) {
                     var cursor = db.collection('message').find(finder);
                     cursor.each(function(err, doc) {
                         assert.equal(err, null);
-                        console.log(doc);
                         if (doc != null) {
-                            console.log("toimii");
-                            //console.log(doc);
                             //var jotain={'user':doc};
                             if(post["creationTime"]<doc["creationTime"] && post["owner"] == doc["sender"]){
                                 array.push(JSON.stringify(doc));
@@ -256,8 +231,6 @@ function handleRequest(request, response) {
                              db.collection('user').save(user, {
                                 w: 1
                             }, function(err, result) {
-                               // console.log(result);
-                                //console.log(err);
                                 db.close();
                             });
 
@@ -271,7 +244,6 @@ function handleRequest(request, response) {
                         }
                         
                         if (!end) {
-                            //console.log(object);
                             response.writeHeader(200, {
                                 "Content-Type": "text/plain",
                                 
@@ -286,7 +258,6 @@ function handleRequest(request, response) {
             }
              else if(post[job]=="save_tracker")
             {
-                console.log("Möh");
                 MongoClient.connect(url,function(err,db){
                     
                     var finder={'_id':post[userName]};
@@ -314,17 +285,13 @@ function handleRequest(request, response) {
                                 if(trackerCheck){
                                     trackers.push(newTracker);
                                     user['trackers']=trackers;
-                                    console.log("perse");
                                 }
                                  db.collection('user').save(user, 
                                  {
                                     w: 1
                                  }, function(err, result) 
                                  {
-                                    console.log(user);
-                                    console.log("täällä");
-                                   console.log(result);
-                                    console.log(err);
+
                                     db.close();
                                  });
                                 
@@ -336,7 +303,6 @@ function handleRequest(request, response) {
                         }
                         if (!end) 
                         {
-                            //console.log(object);
                             response.writeHeader(200, 
                             {
                                 "Content-Type": "text/plain",
@@ -352,7 +318,6 @@ function handleRequest(request, response) {
             }
              else if(post[job]==getSharedTrackers)
             {
-                console.log("Möh");
                 var jokuLista=[];
                 MongoClient.connect(url,function(err,db)
                 {
