@@ -10,6 +10,7 @@ const PORT = 8080;
 
 var job="job";
 var userName="userName";
+var getSharedTrackers="getSharedTrackers";
 
 
 
@@ -347,6 +348,45 @@ function handleRequest(request, response) {
                         }
 
                     });
+                });
+            }
+             else if(post[job]==getSharedTrackers)
+            {
+                console.log("Möh");
+                var jokuLista=[];
+                MongoClient.connect(url,function(err,db)
+                {
+                    var list=post["list"];
+                    for(var i=0;i<list.length;i++)
+                    {
+                        var sharedTracker=list[i];
+                        var finder={'_id':post[userName]};
+                        var cursor=db.collection('user').find(finder);
+                        cursor.each(function(err, user) 
+                        {
+                            var trackers=user['trackers'];
+                            if(trackers!=null)
+                            {
+                                for(var j=0;j<trackers.length;j++)
+                                {
+                                    var tracker=trackers[i];
+                                    if(tracker['creationTime']==sharedTracker['creationTime'])
+                                    {
+                                        jokuLista.push(JSON.stringify(tracker));
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    response.writeHeader(200, 
+                        {
+                            "Content-Type": "text/plain",
+                            //'Content-Length': object.length
+                        });
+                    response.write(JSON.stringify(jokuLista));
+                    db.close();
+                    response.end();
+                   
                 });
             }
             
