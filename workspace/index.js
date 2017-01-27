@@ -355,7 +355,6 @@ function handleRequest(request, response) {
             }
              else if(post[job]==getSharedTrackers)
             {
-                //lisää async
                 var jokuLista=[];
                 MongoClient.connect(url,function(err,db)
                 {
@@ -372,15 +371,10 @@ function handleRequest(request, response) {
                                     callback();
                                     return;
                                 } 
-                            
                                 setImmediate(fnAction, user, function() {
                                     cursor.nextObject(fn);
-                                    
                                 });
                             });
-                            
-  
-                            
                             function fnAction(user, callback) {
                                 // Here you can do whatever you want to do with your item.
                                 if(typeof user!= 'undefined'&& user!=null && user['trackers']!= 'undefined'){
@@ -399,11 +393,7 @@ function handleRequest(request, response) {
                                 }
                                 return callback();
                             }
-                            
-                            
-                           
                         }
-                        
                     },function(err){
                         if(err){
                             response.writeHeader(200, 
@@ -427,8 +417,38 @@ function handleRequest(request, response) {
                     });
                   
                 });
+            }else if(post[job]=='deleteTracker'){
+                MongoClient.connect(url,function(err,db)
+                {
+                    var finder={};
+                    finder[userName]=post[userName];
+                    var cursor=db.collection('user').find(finder);
+                    cursor.each(function(err,user){
+                        if(user!=null){
+                            var trackers=user['trackers'];
+                            for(var i=0;i<trackers.length;i++)
+                            {
+                                if(trackers[i]['creationTime']===post['creationTime'])
+                                {
+                                    trackers.splice(i);
+                                }
+                            }
+                            user['trackers']=trackers;
+                            db.collection('user').save(user,{
+                                w:1
+                            },function(err, result){
+                                db.close();
+                                response.write("done");
+                                response.end();
+                            });
+                        }else{
+                           
+
+                        }
+                    });
+                    
+                });
             }
-            
         });
     }
 }
