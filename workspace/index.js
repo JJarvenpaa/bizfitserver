@@ -1,13 +1,43 @@
 "use strict";
-var http = require('http');
-var qs = require('querystring');
-var MongoClient = require('mongodb').MongoClient;
-var assert = require('assert');
-var async = require('async');
+
+
+const http = require('http');
+const cluster = require('cluster');
+const os = require('os');
+const numCPUs = os.cpus().length
+const qs = require('querystring');
+const MongoClient = require('mongodb').MongoClient;
+const assert = require('assert');
+const async = require('async');
+
+if (cluster.isMaster) 
+{
+  console.log(`Master ${process.pid} is running`);
+
+  // Fork workers.
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker, code, signal) => 
+  {
+    console.log(`worker ${worker.process.pid} died`);
+  });
+} else 
+{
+  console.log(`Worker ${process.pid} started`);
+
+
+
+
+
+
+
 
 var url = 'mongodb://127.0.0.1:27017/test';
 
 const PORT = 8080;
+//const PORT = $PORT;
 
 
 GLOBAL.job="job";
@@ -457,4 +487,7 @@ function handleRequest(request, response) {
 var server = http.createServer(handleRequest);
 
 //Lets start our server
+//server.listen(PORT);
 server.listen(PORT,"0.0.0.0");
+//server.listen(PORT,$IP);
+}
