@@ -9,7 +9,10 @@ const qs = require('querystring');
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const async = require('async');
-const dbversion=67;
+const dbversion=71;
+
+
+//db.user.findOne({"_id":"atte.yliverronen@gmail.com"})
 /*if (cluster.isMaster) 
 {
   console.log(`Master ${process.pid} is running`);
@@ -44,6 +47,7 @@ const dbversion=67;
     GLOBAL.job="job";
     GLOBAL.userName="_id";
     GLOBAL.getSharedTrackers="getSharedTrackers";
+    GLOBAL.sharedTrackers="SharedTrackers";
     
     
     
@@ -75,10 +79,8 @@ const dbversion=67;
                     response.writeHeader(200,{
                         "Content-Type":"text/plain"
                     });
-                                    console.log(post);
                     response.write("failed");
                     response.end();
-                    console.log("hehee");
                     return;
                 }
                 if (post[job]=="save") {
@@ -93,7 +95,7 @@ const dbversion=67;
                     MongoClient.connect(url, function(err, db) {
                         assert.equal(null, err);
                         db.collection('user').save(post["user"], {
-                            w: 0
+                            w: 1
                         }, function(err, result) {
                             db.close();
                         });
@@ -178,7 +180,7 @@ const dbversion=67;
                                         var conversation = {'owner': post['message']['resipient'],'other': post['message']['sender']};
                                         user['conversations'].push(conversation);
                                         db.collection('user').save(user,{
-                                            w:0
+                                            w:1
                                         },function(err, result){
                                             db.close();
                                         });
@@ -303,7 +305,7 @@ const dbversion=67;
     
                             
                                  db.collection('user').save(user, {
-                                    w: 0
+                                    w: 1
                                 }, function(err, result) {
                                     db.close();
                                 });
@@ -462,7 +464,8 @@ const dbversion=67;
                         finder[userName]=post[userName];
                         var cursor=db.collection('user').find(finder);
                         cursor.each(function(err,user){
-                            if(user!=null){
+                            if(user!=null)
+                            {
                                 var trackers=user['trackers'];
                                 for(var i=0;i<trackers.length;i++)
                                 {
@@ -479,7 +482,8 @@ const dbversion=67;
                                     response.write("done");
                                     response.end();
                                 });
-                            }else{
+                            }
+                            else{
                                
     
                             }
@@ -487,54 +491,154 @@ const dbversion=67;
                         
                     });
                 }
-                 /*else if (post[job]=="CancelTrackerSharing") {
+                 else if (post[job]=="ChangeTrackerSharingStatus") {
+                 console.log(post);
                     MongoClient.connect(url, function(err, db) {
                         assert.equal(null, err);
-                        var end = false;
 
-    
                         var object;
                         var finder={};
-                        finder[userName]=post[userName];
+                        
+                        finder[userName]=post[GLOBAL.userName];
+                        var test=post[sharedTrackers];
                         var cursor = db.collection('user').find(finder);
-                        cursor.each(function(err, doc) {
-                            assert.equal(err, null);
+                        console.log(finder);
+                        cursor.each(function(err, user) {
+                            //assert.equal(err, null);
                             if (user != null) 
                             {
-                                var sharedTrackers=;    
+                                var sharedTrackers=user[GLOBAL.sharedTrackers];
+                                console.log(sharedTrackers);
+                                for(var i=0; i < sharedTrackers.length;i++)
+                                {
+                                    if(sharedTrackers[i]['UUID']===post[GLOBAL.sharedTrackers]['UUID'])
+                                    {
+                                        sharedTrackers[i]["SharedTrackerStatus"]==post[GLOBAL.sharedTrackers]["SharedTrackerStatus"];
+                                    }
+                                }
+                                console.log(sharedTrackers);
+                                user[GLOBAL.sharedTrackers]=sharedTrackers;
+                                db.collection('user').save(user,{
+                                    w:1
+                                },function(err, result){
+                                    //db.close();
+                                    var cursor2=db.collection('user').find(finder);
+                                    cursor2.each(function(err,user2){
+                                        console.log(user2);
+                                    });
+                                    response.write("done");
+                                    response.end();
+                                });
                                 
                             }
                             else
                             {
                                 //object = JSON.stringify(jotain);
                             }
-                                
-                            }else{
-                                response.writeHeader(200, {
-                                    "Content-Type": "text/plain",
-                                    //'Content-Length': object.length
-                                });
-                                if(typeof object != 'undefined'){
-                                    response.write(object);
-                                }
-                                
-                                response.end();
-                                end = true;
-                                db.close();
-                            }
-    
     
                         });
                       
-                    }); */
+                    }); 
 
+                }else if(post[job]==="AddSharedTracker"){
+                    MongoClient.connect(url,function(err,db)
+                    {
+                        assert.equal(err,null);
+                        var finder={};
+                        finder[userName]=post[GLOBAL.userName];
+                        var cursor=db.collection('user').find(finder);
+                        cursor.each(function(err,user){
+                            if(user!=null){
+                                if(typeof  user[GLOBAL.sharedTrackers]=='undefined'){
+                                    user[GLOBAL.sharedTrackers]=[];
+                                    console.log("möh");
+                                }
+                                var found=false;
+                                for(var i=0;i<user[GLOBAL.sharedTrackers].length&&!found;i++){
+                                    if(user[GLOBAL.sharedTrackers][i]["UUID"]==post[GLOBAL.sharedTrackers]["UUID"]){
+                                        found=true;
+                                    }
+                                }
+                                if(!found){
+                                     user[GLOBAL.sharedTrackers].push(post[GLOBAL.sharedTrackers]);
+                                    db.collection('user').save(user,{
+                                        w:1
+                                    },function(err,result){
+                                        db.close();
+                                        response.write("done");
+                                        response.end();
+                                    });
+                                }else{
+                                    db.close();
+                                    response.write("done");
+                                    response.end();
+                                }
+                               
+                            }
+                        });
+                    });
+                }else if(post[job]==='ChatRequest')
+                {
+                    MongoClient.connect(url,function(err,db){
+                        assert.equal(err,null);
+                        var finder={};
+                        finder[userName]=post["expert"];
+                        var cursor=db.collection('user').find(finder);
+                        cursor.each(function(err,user){
+                            if(user!=null){
+                                if(typeof  user["pendingChatRequests"]=='undefined'){
+                                    user[GLOBAL.sharedTrackers]=[];
+                                    console.log("möh");
+                                }
+                                var found=false;
+                                for(var i=0;i<user["pendingChatRequests"].length&&!found;i++){
+                                    if(user["pendingChatRequests"][i]["UUID"]==post["UUID"]){
+                                        found=true;
+                                    }
+                                }
+                                if(!found){
+                                     user["pendingChatRequests"].push(post);
+                                    db.collection('user').save(user,{
+                                        w:1
+                                    },function(err,result){
+                                        db.close();
+                                        response.write("done");
+                                        response.end();
+                                    });
+                                }else{
+                                    db.close();
+                                    response.write("done");
+                                    response.end();
+                                }
+                            }
+                        });
+                    });
+                }
+                else if(post[GLOBAL.job]==="GetChatRequests")
+                {
+                    MongoClient.connect(url,function(err,db){
+                        assert.equal(err,null);
+                        var finder={};
+                        finder[userName]=post[GLOBAL.userName];
+                        db.collection('user').findOne(finder,function(err,user){
+                            if(user!=null)
+                            {
+                                if(typeof  user["pendingChatRequests"]=!'undefined')
+                                {
+                                    response.write(JSON.stringify(user["pendingChatRequests"]));
+                                }else{
+                                    response.write("no pendingChatRequests found");
+                                }
+                                db.close();
+                                response.end();
+                            }
+                        });
+                    });
+                }
+                
             });
         }
     }
-    
-   
-   
-
     //Create a server
     var server = http.createServer(handleRequest);
     
