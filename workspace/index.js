@@ -10,7 +10,6 @@ const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const async = require('async');
 const NodeJobs = require('Jobs');
-var isJSON = require('is-json');
 const dbversion=73;
 
 
