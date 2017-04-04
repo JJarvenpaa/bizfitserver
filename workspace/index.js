@@ -10,7 +10,10 @@ const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const async = require('async');
 const NodeJobs = require('Jobs');
+var isJSON = require('is-json');
 const dbversion=73;
+
+
 
 
 //db.user.findOne({"_id":"atte.yliverronen@gmail.com"})
@@ -73,7 +76,15 @@ const dbversion=73;
                     request.connection.destroy();
                 }
             });
-            request.on('end', function() {
+            request.on('end', function() 
+            {
+                 if(!isJSON(body))
+                 {
+                     console.log(body);
+                     response.write("failed");
+                     response.end();
+                     return;
+                 }
                 var post = JSON.parse(body);
                 if(post['dbversion']<dbversion||!post['dbversion']){
                     response.writeHeader(200,{
