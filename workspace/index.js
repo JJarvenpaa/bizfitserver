@@ -78,13 +78,14 @@ const dbversion=73;
             });
             request.on('end', function() 
             {
-                 if(!isJSON(body))
-                 {
-                     console.log(body);
-                     response.write("failed");
-                     response.end();
-                     return;
-                 }
+                try {
+                    JSON.parse(body);
+                } catch (e) {
+                    console.log(body);
+                    response.write("failed");
+                    response.end();
+                    return;
+                }
                 var post = JSON.parse(body);
                 if(post['dbversion']<dbversion||!post['dbversion']){
                     response.writeHeader(200,{
