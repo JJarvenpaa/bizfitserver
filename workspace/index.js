@@ -117,7 +117,7 @@ const dbversion=75;
                         {
                             NodeJobs.sendMessage(db, post, function(payload)
                             {
-                                //console.log(payload);
+                                console.log(payload);
                                 handlePayLoad(response, payload);
                             });
                         });
@@ -127,7 +127,7 @@ const dbversion=75;
                     {
                         NodeJobs.getMessageIncoming(db, post, function(payload)
                         {
-                            //console.log(payload);
+                            console.log(payload);
                             handlePayLoad(response, payload);
                         });
                     
@@ -140,7 +140,7 @@ const dbversion=75;
                       
                         NodeJobs.getMessageOutgoing(db, post, function(payload)
                         {
-                           // console.log(payload);
+                            console.log(payload);
                             handlePayLoad(response, payload);
                         });
                     });
@@ -152,7 +152,6 @@ const dbversion=75;
                     {
                         NodeJobs.saveConversation(db, post, function(payload)
                         {
-                            //console.log("täällä");
                             console.log(payload);
                             handlePayLoad(response, payload);
                             
@@ -217,6 +216,17 @@ const dbversion=75;
                        });
                     });
                     
+                }
+                else if(post[GLOBAL.job]==="updateMessageHasBeenSeen")
+                {
+                    MongoClient.connect(url,function(err,db)
+                    {
+                        NodeJobs.updateMessageHasBeenSeen(db,post,function(payload)
+                        {
+                            console.log(payload);
+                            handlePayLoad(response,payload);
+                        });
+                    });
                 }
                 
             });
