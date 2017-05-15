@@ -228,6 +228,26 @@ const dbversion=75;
                         });
                     });
                 }
+                else if(post[GLOBAL.job]==="loadContactInfo")
+                {
+                    MongoClient.connect(url,function(err,db)
+                    {
+                        NodeJobs.loadContactInfo(db,post,function(payload)
+                        {
+                           handlePayLoad(response,payload); 
+                        });
+                    });
+                }
+                else if(post[GLOBAL.job]==="saveContactInfo")
+                {
+                    MongoClient.connect(url,function(err,db)
+                    {
+                        NodeJobs.saveContactInfo(db,post,function(payload)
+                        {
+                            handlePayLoad(response,payload);
+                        });
+                    });
+                }
                 
             });
         }
