@@ -1,17 +1,18 @@
 "use strict";
 
 
-const http = require('http');
-const cluster = require('cluster');
-const os = require('os');
-const numCPUs = os.cpus().length
-const qs = require('querystring');
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
-const async = require('async');
-const NodeJobs = require('Jobs');
-const dbversion=75;
-
+var http = require('http');
+var https = require('https');
+var cluster = require('cluster');
+var os = require('os');
+var numCPUs = os.cpus().length
+var qs = require('querystring');
+var MongoClient = require('mongodb').MongoClient;
+var assert = require('assert');
+var async = require('async');
+var NodeJobs = require('Jobs');
+var dbversion=75;
+var fs = require("fs");
 
 
 
@@ -38,12 +39,12 @@ const dbversion=75;
 
 
 
-
-
+   
+   
 
     var url = 'mongodb://127.0.0.1:27017/test';
-    
-    const PORT = 8080;
+    var cosmoOsote="mongodb://bizfitserverdb:loC4iF0b78j019bygn3ODtTTDr1M2x65xoLL3JHH7VWCZFq94NA6PrJgGk13ZrHEKUenzoW4jlPYHvQWNZPoog==@bizfitserverdb.documents.azure.com:10255/test?ssl=true&replicaSet=globaldb";
+    var PORT = 8081;
     //const PORT = $PORT;
     
     
@@ -51,10 +52,22 @@ const dbversion=75;
     GLOBAL.userName="_id";
     GLOBAL.getSharedTrackers="getSharedTrackers";
     GLOBAL.sharedTrackers="SharedTrackers";
+     
+    var options = {
+        key: fs.readFileSync('certs/server.CA.key'),
+        cert: fs.readFileSync('certs/server.CA-signed.crt'),
+        passphrase:'testi'
+    };
+    /*
+     MongoClient.connect(cosmoOsote, function(err, db)
+                {
+                    NodeJobs.save(db,null,function(payload){
+                        console.log(payload);
+                        //handlePayLoad(response, payload);
+                    });
+                });
     
-    
-    
-    
+    */
     //We need a function which handles requests and sends responses
     function handleRequest(request, response) {
         var test;
@@ -80,7 +93,6 @@ const dbversion=75;
                 try {
                     JSON.parse(body);
                 } catch (e) {
-                    console.log(body);
                     response.write("failed");
                     response.end();
                     return;
@@ -94,7 +106,7 @@ const dbversion=75;
                     response.end();
                     return;
                 }
-                if (post[job]=="save") {
+                if (post[GLOBAL.job]=="save") {
                     MongoClient.connect(url, function(err, db)
                     {
                         NodeJobs.save(db,post,function(payload){
@@ -102,7 +114,7 @@ const dbversion=75;
                         });
                     });
                 }
-                else if (post[job]=="load") {
+                else if (post[GLOBAL.job]=="load") {
                     MongoClient.connect(url, function(err, db) {
                         NodeJobs.load(db, post, function(payload)
                         {
@@ -111,48 +123,44 @@ const dbversion=75;
                     });
                     
                 }
-                else if(post[job]=="send_message")
+                else if(post[GLOBAL.job]=="send_message")
                 {
                         MongoClient.connect(url, function(err, db) 
                         {
                             NodeJobs.sendMessage(db, post, function(payload)
                             {
-                                console.log(payload);
                                 handlePayLoad(response, payload);
                             });
                         });
-                }else if(post[job]=="get_message_incoming")
+                }else if(post[GLOBAL.job]=="get_message_incoming")
                 {
                     MongoClient.connect(url, function(err, db) 
                     {
                         NodeJobs.getMessageIncoming(db, post, function(payload)
                         {
-                            console.log(payload);
                             handlePayLoad(response, payload);
                         });
                     
                     });
                 }
-                else if(post[job]=="get_message_outgoing")
+                else if(post[GLOBAL.job]=="get_message_outgoing")
                 {
                     MongoClient.connect(url, function(err, db) 
                     {
                       
                         NodeJobs.getMessageOutgoing(db, post, function(payload)
                         {
-                            console.log(payload);
                             handlePayLoad(response, payload);
                         });
                     });
                 }
-                else if(post[job]=="save_conversation")
+                else if(post[GLOBAL.job]=="save_conversation")
                 {
                     
                     MongoClient.connect(url,function(err,db)
                     {
                         NodeJobs.saveConversation(db, post, function(payload)
                         {
-                            console.log(payload);
                             handlePayLoad(response, payload);
                             
                         });
@@ -160,7 +168,7 @@ const dbversion=75;
                     
                     });
                 }
-                else if(post[job]==='ChatRequest')
+                else if(post[GLOBAL.job]==='ChatRequest')
                 {
                     MongoClient.connect(url,function(err,db)
                     {
@@ -187,7 +195,6 @@ const dbversion=75;
                     {
                        NodeJobs.handleChatRequest(db, post, function(payload)
                        {
-                        //console.log(payload);    
                         handlePayLoad(response, payload); 
                        });
                     });
@@ -199,7 +206,6 @@ const dbversion=75;
                     {
                        NodeJobs.cancelChatRequest(db, post, function(payload)
                        {
-                        //console.log(payload);    
                         handlePayLoad(response, payload); 
                        });
                     });
@@ -211,7 +217,6 @@ const dbversion=75;
                     {
                        NodeJobs.getChatResponses(db, post, function(payload)
                        {
-                        //console.log(payload);    
                         handlePayLoad(response, payload); 
                        });
                     });
@@ -223,7 +228,6 @@ const dbversion=75;
                     {
                         NodeJobs.updateMessageHasBeenSeen(db,post,function(payload)
                         {
-                            console.log(payload);
                             handlePayLoad(response,payload);
                         });
                     });
@@ -248,12 +252,46 @@ const dbversion=75;
                         });
                     });
                 }
+                else if(post[GLOBAL.job]==="send_profile")
+                {
+                    MongoClient.connect(url,function(err, db)
+                    {
+                         NodeJobs.saveProfile(db,post,function(payload)
+                        {
+                            handlePayLoad(response,payload);
+                        });
+                    });
+                }
+                else if(post[GLOBAL.job]==="load_profile")
+                {
+                      MongoClient.connect(url,function(err, db)
+                    {
+                         NodeJobs.loadProfile(db,post,function(payload)
+                        {
+                            handlePayLoad(response,payload);
+                        });
+                    });
+                }
+                else if(post[GLOBAL.job]==='get_expert_profiles')
+                {
+                    
+                    MongoClient.connect(url,function(err, db)
+                    {
+                         NodeJobs.getExpertProfiles(db,post,function(payload)
+                        {
+                            console.log("möt");
+                            console.log(payload);
+                            handlePayLoad(response,payload);
+                        });
+                    });
+                
+                }
                 
             });
         }
     }
     //Create a server
-    var server = http.createServer(handleRequest);
+    var server = https.createServer(options,handleRequest);
     
     //Lets start our server
     //server.listen(PORT);
